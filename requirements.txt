@@ -1,0 +1,15 @@
+# Strands Agents SDK
+strands-agents
+strands-agents-tools
+
+# AWS CDK
+aws-cdk-lib>=2.0.0
+constructs>=10.0.0
+
+# Additional dependencies for RAG pipeline
+boto3
+langchain
+langchain-community
+chromadb
+pypdf2
+python-dotenv
