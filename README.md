@@ -2,7 +2,7 @@
 
 A multimodal agentic RAG (Retrieval-Augmented Generation) pipeline built with AWS Strands Agents SDK and CDK infrastructure.
 
-## 🚀 Overview
+## Overview
 
 This project combines the power of **Strands Agents SDK** with **AWS cloud infrastructure** to create an intelligent RAG system that can:
 
