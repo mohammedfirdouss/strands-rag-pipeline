@@ -6,6 +6,7 @@ Main Strands agent for handling RAG queries with conversation context.
 import json
 import boto3
 import os
+import re
 from typing import Dict, Any
 import logging
 
@@ -25,6 +26,52 @@ EMBEDDINGS_TABLE = os.environ['EMBEDDINGS_TABLE']
 # Initialize DynamoDB tables
 conversation_table = dynamodb.Table(CONVERSATION_TABLE)
 embeddings_table = dynamodb.Table(EMBEDDINGS_TABLE)
+
+
+def sanitize_input(text: str) -> str:
+    """Sanitize user input to prevent injection attacks.
+    
+    Args:
+        text: Input text to sanitize
+        
+    Returns:
+        Sanitized text
+    """
+    if not text:
+        return ""
+    
+    # Remove any control characters except newlines and tabs
+    sanitized = ''.join(char for char in text if char.isprintable() or char in '\n\t')
+    
+    # Limit length to prevent resource exhaustion
+    max_length = 50000
+    if len(sanitized) > max_length:
+        sanitized = sanitized[:max_length]
+    
+    return sanitized
+
+
+def validate_conversation_id(conversation_id: str) -> bool:
+    """Validate conversation ID format.
+    
+    Args:
+        conversation_id: Conversation ID to validate
+        
+    Returns:
+        True if valid, False otherwise
+    """
+    if not conversation_id or not isinstance(conversation_id, str):
+        return False
+    
+    # Allow alphanumeric, hyphens, and underscores only
+    if not re.match(r'^[a-zA-Z0-9_-]+$', conversation_id):
+        return False
+    
+    # Check length
+    if len(conversation_id) > 256:
+        return False
+    
+    return True
 
 
 def create_rag_agent():
@@ -152,6 +199,9 @@ def handler(event: Dict[str, Any], context) -> Dict[str, Any]:
         user_message = body.get('message', '').strip()
         conversation_id = body.get('conversation_id', 'default')
         
+        # Sanitize inputs
+        user_message = sanitize_input(user_message)
+        
         # Validate input
         if not user_message:
             return {
@@ -179,7 +229,7 @@ def handler(event: Dict[str, Any], context) -> Dict[str, Any]:
             }
         
         # Validate conversation_id format
-        if not isinstance(conversation_id, str) or len(conversation_id) > 256:
+        if not validate_conversation_id(conversation_id):
             return {
                 'statusCode': 400,
                 'headers': {
@@ -187,7 +237,7 @@ def handler(event: Dict[str, Any], context) -> Dict[str, Any]:
                     'Access-Control-Allow-Origin': '*'
                 },
                 'body': json.dumps({
-                    'error': 'Invalid conversation_id format'
+                    'error': 'Invalid conversation_id format (use alphanumeric, hyphens, and underscores only)'
                 })
             }
         
