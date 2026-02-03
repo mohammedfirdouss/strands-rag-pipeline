@@ -40,6 +40,21 @@ def handler(event: Dict[str, Any], context) -> Dict[str, Any]:
         # Parse request body
         body = json.loads(event.get('body', '{}'))
         
+        # Validate input
+        if not body:
+            return {
+                'statusCode': 400,
+                'headers': {
+                    'Content-Type': 'application/json',
+                    'Access-Control-Allow-Origin': '*'
+                },
+                'body': json.dumps({
+                    'error': 'Request body is required'
+                })
+            }
+        
+        logger.info(f"Processing document request: {body}")
+        
         # For now, return a simple response
         # In a full implementation, this would:
         # 1. Extract text from uploaded documents
@@ -62,9 +77,23 @@ def handler(event: Dict[str, Any], context) -> Dict[str, Any]:
             },
             'body': json.dumps(response_body)
         }
+    
+    except json.JSONDecodeError as e:
+        logger.error(f"Invalid JSON in request body: {str(e)}")
+        return {
+            'statusCode': 400,
+            'headers': {
+                'Content-Type': 'application/json',
+                'Access-Control-Allow-Origin': '*'
+            },
+            'body': json.dumps({
+                'error': 'Invalid JSON in request body',
+                'message': str(e)
+            })
+        }
         
     except Exception as e:
-        logger.error(f"Error processing document: {str(e)}")
+        logger.error(f"Error processing document: {str(e)}", exc_info=True)
         
         return {
             'statusCode': 500,

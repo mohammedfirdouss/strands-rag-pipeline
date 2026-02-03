@@ -8,8 +8,12 @@ import os
 from pathlib import Path
 
 
-def test_imports():
-    """Test that all required packages can be imported."""
+def test_imports() -> bool:
+    """Test that all required packages can be imported.
+    
+    Returns:
+        True if all imports succeeded, False otherwise
+    """
     print("🧪 Testing package imports...")
     
     try:
@@ -38,8 +42,12 @@ def test_imports():
     return True
 
 
-def test_file_structure():
-    """Test that all required files exist."""
+def test_file_structure() -> bool:
+    """Test that all required files exist.
+    
+    Returns:
+        True if all files exist, False otherwise
+    """
     print("\n📁 Testing file structure...")
     
     required_files = [
@@ -68,8 +76,12 @@ def test_file_structure():
     return True
 
 
-def test_cdk_synth():
-    """Test CDK synthesis."""
+def test_cdk_synth() -> bool:
+    """Test CDK synthesis.
+    
+    Returns:
+        True if CDK synthesis succeeded, False otherwise
+    """
     print("\n🔧 Testing CDK synthesis...")
     
     try:
@@ -96,8 +108,12 @@ def test_cdk_synth():
         return False
 
 
-def test_local_agent():
-    """Test the local RAG agent creation."""
+def test_local_agent() -> bool:
+    """Test the local RAG agent creation.
+    
+    Returns:
+        True if agent creation succeeded, False otherwise
+    """
     print("\n🤖 Testing local RAG agent...")
     
     try:
@@ -136,8 +152,12 @@ def test_local_agent():
         return False
 
 
-def main():
-    """Run all tests."""
+def main() -> bool:
+    """Run all tests.
+    
+    Returns:
+        True if all tests passed, False otherwise
+    """
     print("🧪 Strands RAG Pipeline Setup Test")
     print("=" * 50)
     

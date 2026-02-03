@@ -10,8 +10,16 @@ import os
 from pathlib import Path
 
 
-def run_command(command: str, description: str):
-    """Run a shell command and handle errors."""
+def run_command(command: str, description: str) -> bool:
+    """Run a shell command and handle errors.
+    
+    Args:
+        command: Shell command to execute
+        description: Human-readable description of the command
+        
+    Returns:
+        True if command succeeded, False otherwise
+    """
     print(f"📦 {description}...")
     try:
         result = subprocess.run(command, shell=True, check=True, capture_output=True, text=True)
@@ -24,8 +32,12 @@ def run_command(command: str, description: str):
         return False
 
 
-def check_python_version():
-    """Check if Python version is compatible."""
+def check_python_version() -> bool:
+    """Check if Python version is compatible.
+    
+    Returns:
+        True if Python version is 3.8 or higher, False otherwise
+    """
     version = sys.version_info
     if version.major < 3 or (version.major == 3 and version.minor < 8):
         print("❌ Python 3.8 or higher is required")
@@ -34,8 +46,12 @@ def check_python_version():
     return True
 
 
-def setup_environment():
-    """Set up the development environment."""
+def setup_environment() -> bool:
+    """Set up the development environment.
+    
+    Returns:
+        True if setup succeeded, False otherwise
+    """
     print("🚀 Setting up Strands RAG Pipeline Development Environment")
     print("=" * 60)
     

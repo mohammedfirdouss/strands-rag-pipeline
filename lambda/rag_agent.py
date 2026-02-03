@@ -108,8 +108,18 @@ Always be helpful, accurate, and cite your sources when referencing document con
         return None
 
 
-def save_conversation_message(conversation_id: str, role: str, content: str, timestamp: str):
-    """Save a conversation message to DynamoDB."""
+def save_conversation_message(conversation_id: str, role: str, content: str, timestamp: str) -> bool:
+    """Save a conversation message to DynamoDB.
+    
+    Args:
+        conversation_id: Unique identifier for the conversation
+        role: Role of the message sender (user/assistant)
+        content: Message content
+        timestamp: ISO format timestamp
+        
+    Returns:
+        True if save succeeded, False otherwise
+    """
     try:
         conversation_table.put_item(
             Item={
@@ -119,8 +129,10 @@ def save_conversation_message(conversation_id: str, role: str, content: str, tim
                 'content': content
             }
         )
+        return True
     except Exception as e:
-        logger.error(f"Error saving conversation message: {str(e)}")
+        logger.error(f"Error saving conversation message: {str(e)}", exc_info=True)
+        return False
 
 
 def handler(event: Dict[str, Any], context) -> Dict[str, Any]:
@@ -137,9 +149,10 @@ def handler(event: Dict[str, Any], context) -> Dict[str, Any]:
     try:
         # Parse request body
         body = json.loads(event.get('body', '{}'))
-        user_message = body.get('message', '')
+        user_message = body.get('message', '').strip()
         conversation_id = body.get('conversation_id', 'default')
         
+        # Validate input
         if not user_message:
             return {
                 'statusCode': 400,
@@ -148,9 +161,37 @@ def handler(event: Dict[str, Any], context) -> Dict[str, Any]:
                     'Access-Control-Allow-Origin': '*'
                 },
                 'body': json.dumps({
-                    'error': 'Message is required'
+                    'error': 'Message is required and cannot be empty'
                 })
             }
+        
+        # Validate message length
+        if len(user_message) > 10000:
+            return {
+                'statusCode': 400,
+                'headers': {
+                    'Content-Type': 'application/json',
+                    'Access-Control-Allow-Origin': '*'
+                },
+                'body': json.dumps({
+                    'error': 'Message is too long (max 10000 characters)'
+                })
+            }
+        
+        # Validate conversation_id format
+        if not isinstance(conversation_id, str) or len(conversation_id) > 256:
+            return {
+                'statusCode': 400,
+                'headers': {
+                    'Content-Type': 'application/json',
+                    'Access-Control-Allow-Origin': '*'
+                },
+                'body': json.dumps({
+                    'error': 'Invalid conversation_id format'
+                })
+            }
+        
+        logger.info(f"Processing message from conversation {conversation_id}")
         
         # Create timestamp
         from datetime import datetime
@@ -187,9 +228,23 @@ def handler(event: Dict[str, Any], context) -> Dict[str, Any]:
             },
             'body': json.dumps(response_body)
         }
+    
+    except json.JSONDecodeError as e:
+        logger.error(f"Invalid JSON in request body: {str(e)}")
+        return {
+            'statusCode': 400,
+            'headers': {
+                'Content-Type': 'application/json',
+                'Access-Control-Allow-Origin': '*'
+            },
+            'body': json.dumps({
+                'error': 'Invalid JSON in request body',
+                'message': str(e)
+            })
+        }
         
     except Exception as e:
-        logger.error(f"Error processing RAG query: {str(e)}")
+        logger.error(f"Error processing RAG query: {str(e)}", exc_info=True)
         
         return {
             'statusCode': 500,
