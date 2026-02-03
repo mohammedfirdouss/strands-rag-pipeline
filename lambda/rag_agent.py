@@ -46,8 +46,12 @@ def sanitize_input(text: str, max_length: int = MAX_SANITIZE_LENGTH) -> str:
     if not text:
         return ""
     
-    # Remove any control characters except newlines and tabs
-    sanitized = ''.join(char for char in text if char.isprintable() or char in '\n\t')
+    # Strip leading/trailing whitespace
+    text = text.strip()
+    
+    # Remove any control characters except newlines
+    # Note: Tabs are excluded for security - they can cause issues with downstream processing
+    sanitized = ''.join(char for char in text if char.isprintable() or char == '\n')
     
     # Limit length to prevent resource exhaustion
     if len(sanitized) > max_length:
@@ -201,10 +205,10 @@ def handler(event: Dict[str, Any], context) -> Dict[str, Any]:
     try:
         # Parse request body
         body = json.loads(event.get('body', '{}'))
-        user_message = body.get('message', '').strip()
+        user_message = body.get('message', '')
         conversation_id = body.get('conversation_id', 'default')
         
-        # Sanitize inputs
+        # Sanitize inputs (includes stripping)
         user_message = sanitize_input(user_message)
         
         # Validate input
