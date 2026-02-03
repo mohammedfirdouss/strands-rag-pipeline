@@ -88,7 +88,7 @@ def handler(event: Dict[str, Any], context) -> Dict[str, Any]:
             },
             'body': json.dumps({
                 'error': 'Invalid JSON in request body',
-                'message': str(e)
+                'message': 'The request body must be valid JSON'
             })
         }
         
