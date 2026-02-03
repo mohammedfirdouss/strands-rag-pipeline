@@ -49,9 +49,9 @@ def sanitize_input(text: str, max_length: int = MAX_SANITIZE_LENGTH) -> str:
     # Strip leading/trailing whitespace
     text = text.strip()
     
-    # Remove any control characters except newlines
-    # Note: Tabs are excluded for security - they can cause issues with downstream processing
-    sanitized = ''.join(char for char in text if char.isprintable() or char == '\n')
+    # Remove any control characters and tabs (for security)
+    # Only allow printable characters and newlines
+    sanitized = ''.join(char for char in text if (char.isprintable() and char != '\t') or char == '\n')
     
     # Limit length to prevent resource exhaustion
     if len(sanitized) > max_length:
