@@ -23,16 +23,22 @@ DOCUMENT_BUCKET = os.environ['DOCUMENT_BUCKET']
 CONVERSATION_TABLE = os.environ['CONVERSATION_TABLE']
 EMBEDDINGS_TABLE = os.environ['EMBEDDINGS_TABLE']
 
+# Constants
+MAX_MESSAGE_LENGTH = 10000
+MAX_SANITIZE_LENGTH = 50000
+MAX_CONVERSATION_ID_LENGTH = 256
+
 # Initialize DynamoDB tables
 conversation_table = dynamodb.Table(CONVERSATION_TABLE)
 embeddings_table = dynamodb.Table(EMBEDDINGS_TABLE)
 
 
-def sanitize_input(text: str) -> str:
+def sanitize_input(text: str, max_length: int = MAX_SANITIZE_LENGTH) -> str:
     """Sanitize user input to prevent injection attacks.
     
     Args:
         text: Input text to sanitize
+        max_length: Maximum allowed length
         
     Returns:
         Sanitized text
@@ -44,7 +50,6 @@ def sanitize_input(text: str) -> str:
     sanitized = ''.join(char for char in text if char.isprintable() or char in '\n\t')
     
     # Limit length to prevent resource exhaustion
-    max_length = 50000
     if len(sanitized) > max_length:
         sanitized = sanitized[:max_length]
     
@@ -68,7 +73,7 @@ def validate_conversation_id(conversation_id: str) -> bool:
         return False
     
     # Check length
-    if len(conversation_id) > 256:
+    if len(conversation_id) > MAX_CONVERSATION_ID_LENGTH:
         return False
     
     return True
@@ -216,7 +221,7 @@ def handler(event: Dict[str, Any], context) -> Dict[str, Any]:
             }
         
         # Validate message length
-        if len(user_message) > 10000:
+        if len(user_message) > MAX_MESSAGE_LENGTH:
             return {
                 'statusCode': 400,
                 'headers': {
@@ -224,7 +229,7 @@ def handler(event: Dict[str, Any], context) -> Dict[str, Any]:
                     'Access-Control-Allow-Origin': '*'
                 },
                 'body': json.dumps({
-                    'error': 'Message is too long (max 10000 characters)'
+                    'error': f'Message is too long (max {MAX_MESSAGE_LENGTH} characters)'
                 })
             }
         
@@ -304,6 +309,6 @@ def handler(event: Dict[str, Any], context) -> Dict[str, Any]:
             },
             'body': json.dumps({
                 'error': 'Internal server error',
-                'message': str(e)
+                'message': 'An error occurred while processing your request. Please try again later.'
             })
         }

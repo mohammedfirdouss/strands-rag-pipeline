@@ -103,6 +103,6 @@ def handler(event: Dict[str, Any], context) -> Dict[str, Any]:
             },
             'body': json.dumps({
                 'error': 'Internal server error',
-                'message': str(e)
+                'message': 'An error occurred while processing your document. Please try again later.'
             })
         }
