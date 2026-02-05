@@ -12,6 +12,8 @@ from aws_cdk import (
     aws_iam as iam,
     RemovalPolicy,
     Duration,
+    Tags,
+    CfnOutput,
 )
 from constructs import Construct
 
@@ -21,6 +23,11 @@ class RagPipelineStack(Stack):
 
     def __init__(self, scope: Construct, construct_id: str, **kwargs) -> None:
         super().__init__(scope, construct_id, **kwargs)
+        
+        # Add stack-level tags
+        Tags.of(self).add("Project", "StrandsRAGPipeline")
+        Tags.of(self).add("Environment", "Development")
+        Tags.of(self).add("ManagedBy", "CDK")
 
         # S3 bucket for document storage
         self.document_bucket = s3.Bucket(
@@ -32,7 +39,15 @@ class RagPipelineStack(Stack):
             block_public_access=s3.BlockPublicAccess.BLOCK_ALL,
             removal_policy=RemovalPolicy.DESTROY,  # For development
             auto_delete_objects=True,  # For development
+            lifecycle_rules=[
+                s3.LifecycleRule(
+                    id="DeleteOldVersions",
+                    noncurrent_version_expiration=Duration.days(30),
+                    enabled=True,
+                )
+            ],
         )
+        Tags.of(self.document_bucket).add("Purpose", "DocumentStorage")
 
         # DynamoDB table for conversation history and metadata
         self.conversation_table = dynamodb.Table(
@@ -47,7 +62,10 @@ class RagPipelineStack(Stack):
             ),
             billing_mode=dynamodb.BillingMode.PAY_PER_REQUEST,
             removal_policy=RemovalPolicy.DESTROY,  # For development
+            point_in_time_recovery=True,
+            time_to_live_attribute="ttl",
         )
+        Tags.of(self.conversation_table).add("Purpose", "ConversationHistory")
 
         # DynamoDB table for document embeddings metadata
         self.embeddings_table = dynamodb.Table(
@@ -59,19 +77,23 @@ class RagPipelineStack(Stack):
             ),
             billing_mode=dynamodb.BillingMode.PAY_PER_REQUEST,
             removal_policy=RemovalPolicy.DESTROY,  # For development
+            point_in_time_recovery=True,
         )
+        Tags.of(self.embeddings_table).add("Purpose", "EmbeddingsMetadata")
 
         # IAM role for Lambda functions
         self.lambda_role = iam.Role(
             self,
             "RagLambdaRole",
             assumed_by=iam.ServicePrincipal("lambda.amazonaws.com"),
+            description="IAM role for Strands RAG Pipeline Lambda functions",
             managed_policies=[
                 iam.ManagedPolicy.from_aws_managed_policy_name(
                     "service-role/AWSLambdaBasicExecutionRole"
                 )
             ],
         )
+        Tags.of(self.lambda_role).add("Purpose", "LambdaExecution")
 
         # Grant permissions to Lambda role
         self.document_bucket.grant_read_write(self.lambda_role)
@@ -94,6 +116,8 @@ class RagPipelineStack(Stack):
         self.document_processor = _lambda.Function(
             self,
             "DocumentProcessor",
+            function_name="strands-rag-document-processor",
+            description="Processes uploaded documents and creates embeddings",
             runtime=_lambda.Runtime.PYTHON_3_11,
             handler="document_processor.handler",
             code=_lambda.Code.from_asset("lambda"),
@@ -103,13 +127,18 @@ class RagPipelineStack(Stack):
             environment={
                 "DOCUMENT_BUCKET": self.document_bucket.bucket_name,
                 "EMBEDDINGS_TABLE": self.embeddings_table.table_name,
+                "LOG_LEVEL": "INFO",
             },
+            reserved_concurrent_executions=10,
         )
+        Tags.of(self.document_processor).add("Purpose", "DocumentProcessing")
 
         # Lambda function for RAG agent
         self.rag_agent = _lambda.Function(
             self,
             "RagAgent",
+            function_name="strands-rag-agent",
+            description="Main Strands RAG agent for handling queries with conversation context",
             runtime=_lambda.Runtime.PYTHON_3_11,
             handler="rag_agent.handler",
             code=_lambda.Code.from_asset("lambda"),
@@ -120,8 +149,11 @@ class RagPipelineStack(Stack):
                 "DOCUMENT_BUCKET": self.document_bucket.bucket_name,
                 "CONVERSATION_TABLE": self.conversation_table.table_name,
                 "EMBEDDINGS_TABLE": self.embeddings_table.table_name,
+                "LOG_LEVEL": "INFO",
             },
+            reserved_concurrent_executions=20,
         )
+        Tags.of(self.rag_agent).add("Purpose", "RAGAgent")
 
         # API Gateway for the RAG pipeline
         self.api = apigateway.RestApi(
@@ -170,13 +202,12 @@ class RagPipelineStack(Stack):
 
     def add_outputs(self):
         """Add CloudFormation outputs for important resources."""
-        from aws_cdk import CfnOutput
-
         CfnOutput(
             self,
             "DocumentBucketName",
             value=self.document_bucket.bucket_name,
             description="S3 bucket for document storage",
+            export_name="StrandsRAGDocumentBucket",
         )
 
         CfnOutput(
@@ -184,6 +215,7 @@ class RagPipelineStack(Stack):
             "ApiEndpoint",
             value=self.api.url,
             description="API Gateway endpoint URL",
+            export_name="StrandsRAGApiEndpoint",
         )
 
         CfnOutput(
@@ -191,6 +223,7 @@ class RagPipelineStack(Stack):
             "ConversationTableName",
             value=self.conversation_table.table_name,
             description="DynamoDB table for conversation history",
+            export_name="StrandsRAGConversationTable",
         )
 
         CfnOutput(
@@ -198,4 +231,21 @@ class RagPipelineStack(Stack):
             "EmbeddingsTableName",
             value=self.embeddings_table.table_name,
             description="DynamoDB table for document embeddings metadata",
+            export_name="StrandsRAGEmbeddingsTable",
+        )
+        
+        CfnOutput(
+            self,
+            "DocumentProcessorArn",
+            value=self.document_processor.function_arn,
+            description="ARN of the document processor Lambda function",
+            export_name="StrandsRAGDocumentProcessorArn",
+        )
+        
+        CfnOutput(
+            self,
+            "RagAgentArn",
+            value=self.rag_agent.function_arn,
+            description="ARN of the RAG agent Lambda function",
+            export_name="StrandsRAGAgentArn",
         )

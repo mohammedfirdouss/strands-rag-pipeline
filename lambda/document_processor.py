@@ -7,22 +7,37 @@ import json
 import boto3
 import os
 from typing import Dict, Any
-import logging
+
+# Import utilities
+from utils import setup_logging, validate_environment_variables, create_response, create_error_response
 
 # Configure logging
-logger = logging.getLogger()
-logger.setLevel(logging.INFO)
+logger = setup_logging()
 
-# Initialize AWS clients
-s3_client = boto3.client('s3')
-dynamodb = boto3.resource('dynamodb')
-
-# Environment variables
-DOCUMENT_BUCKET = os.environ['DOCUMENT_BUCKET']
-EMBEDDINGS_TABLE = os.environ['EMBEDDINGS_TABLE']
-
-# Initialize DynamoDB table
-embeddings_table = dynamodb.Table(EMBEDDINGS_TABLE)
+# Validate and get environment variables
+try:
+    env_vars = validate_environment_variables([
+        'DOCUMENT_BUCKET',
+        'EMBEDDINGS_TABLE'
+    ])
+    DOCUMENT_BUCKET = env_vars['DOCUMENT_BUCKET']
+    EMBEDDINGS_TABLE = env_vars['EMBEDDINGS_TABLE']
+    
+    # Initialize AWS clients
+    s3_client = boto3.client('s3')
+    dynamodb = boto3.resource('dynamodb')
+    embeddings_table = dynamodb.Table(EMBEDDINGS_TABLE)
+    
+    logger.info(f"Initialized with bucket: {DOCUMENT_BUCKET}, table: {EMBEDDINGS_TABLE}")
+    
+except ValueError as e:
+    logger.error(f"Environment validation failed: {str(e)}")
+    # Set to None to handle in handler
+    DOCUMENT_BUCKET = None
+    EMBEDDINGS_TABLE = None
+    s3_client = None
+    dynamodb = None
+    embeddings_table = None
 
 
 def handler(event: Dict[str, Any], context) -> Dict[str, Any]:
@@ -36,24 +51,28 @@ def handler(event: Dict[str, Any], context) -> Dict[str, Any]:
     Returns:
         API Gateway response
     """
+    # Check environment variables
+    if DOCUMENT_BUCKET is None or EMBEDDINGS_TABLE is None:
+        logger.error("Environment variables not properly configured")
+        return create_error_response(
+            500,
+            'configuration_error',
+            'Service configuration error. Please contact support.'
+        )
+    
     try:
         # Parse request body
         body = json.loads(event.get('body', '{}'))
         
         # Validate input
         if not body:
-            return {
-                'statusCode': 400,
-                'headers': {
-                    'Content-Type': 'application/json',
-                    'Access-Control-Allow-Origin': '*'
-                },
-                'body': json.dumps({
-                    'error': 'Request body is required'
-                })
-            }
+            return create_error_response(
+                400,
+                'invalid_request',
+                'Request body is required'
+            )
         
-        logger.info(f"Processing document request: {body}")
+        logger.info(f"Processing document request: {body.get('document_id', 'unknown')}")
         
         # For now, return a simple response
         # In a full implementation, this would:
@@ -69,40 +88,20 @@ def handler(event: Dict[str, Any], context) -> Dict[str, Any]:
             'status': 'success'
         }
         
-        return {
-            'statusCode': 200,
-            'headers': {
-                'Content-Type': 'application/json',
-                'Access-Control-Allow-Origin': '*'
-            },
-            'body': json.dumps(response_body)
-        }
+        return create_response(200, response_body)
     
     except json.JSONDecodeError as e:
         logger.error(f"Invalid JSON in request body: {str(e)}")
-        return {
-            'statusCode': 400,
-            'headers': {
-                'Content-Type': 'application/json',
-                'Access-Control-Allow-Origin': '*'
-            },
-            'body': json.dumps({
-                'error': 'Invalid JSON in request body',
-                'message': 'The request body must be valid JSON'
-            })
-        }
+        return create_error_response(
+            400,
+            'invalid_json',
+            'The request body must be valid JSON'
+        )
         
     except Exception as e:
         logger.error(f"Error processing document: {str(e)}", exc_info=True)
-        
-        return {
-            'statusCode': 500,
-            'headers': {
-                'Content-Type': 'application/json',
-                'Access-Control-Allow-Origin': '*'
-            },
-            'body': json.dumps({
-                'error': 'Internal server error',
-                'message': 'An error occurred while processing your document. Please try again later.'
-            })
-        }
+        return create_error_response(
+            500,
+            'internal_error',
+            'An error occurred while processing your document. Please try again later.'
+        )
