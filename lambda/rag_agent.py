@@ -6,25 +6,92 @@ Main Strands agent for handling RAG queries with conversation context.
 import json
 import boto3
 import os
+import re
 from typing import Dict, Any
-import logging
+from datetime import datetime
+
+# Import utilities
+from utils import setup_logging, validate_environment_variables, create_response, create_error_response
 
 # Configure logging
-logger = logging.getLogger()
-logger.setLevel(logging.INFO)
+logger = setup_logging()
+
+# Constants
+MAX_MESSAGE_LENGTH = 10000
+MAX_SANITIZE_LENGTH = 50000
+MAX_CONVERSATION_ID_LENGTH = 256
+
+# Validate and get environment variables at module load
+# Fail fast if environment is not configured correctly
+env_vars = validate_environment_variables([
+    'DOCUMENT_BUCKET',
+    'CONVERSATION_TABLE',
+    'EMBEDDINGS_TABLE'
+])
+
+DOCUMENT_BUCKET = env_vars['DOCUMENT_BUCKET']
+CONVERSATION_TABLE = env_vars['CONVERSATION_TABLE']
+EMBEDDINGS_TABLE = env_vars['EMBEDDINGS_TABLE']
 
 # Initialize AWS clients
 dynamodb = boto3.resource('dynamodb')
 s3_client = boto3.client('s3')
 
-# Environment variables
-DOCUMENT_BUCKET = os.environ['DOCUMENT_BUCKET']
-CONVERSATION_TABLE = os.environ['CONVERSATION_TABLE']
-EMBEDDINGS_TABLE = os.environ['EMBEDDINGS_TABLE']
-
 # Initialize DynamoDB tables
 conversation_table = dynamodb.Table(CONVERSATION_TABLE)
 embeddings_table = dynamodb.Table(EMBEDDINGS_TABLE)
+
+logger.info(f"Initialized with bucket: {DOCUMENT_BUCKET}, tables: {CONVERSATION_TABLE}, {EMBEDDINGS_TABLE}")
+
+
+def sanitize_input(text: str, max_length: int = MAX_SANITIZE_LENGTH) -> str:
+    """Sanitize user input to prevent injection attacks.
+    
+    Args:
+        text: Input text to sanitize
+        max_length: Maximum allowed length
+        
+    Returns:
+        Sanitized text
+    """
+    if not text:
+        return ""
+    
+    # Strip leading/trailing whitespace
+    text = text.strip()
+    
+    # Remove any control characters and tabs (for security)
+    # Only allow printable characters and newlines
+    sanitized = ''.join(char for char in text if (char.isprintable() and char != '\t') or char == '\n')
+    
+    # Limit length to prevent resource exhaustion
+    if len(sanitized) > max_length:
+        sanitized = sanitized[:max_length]
+    
+    return sanitized
+
+
+def validate_conversation_id(conversation_id: str) -> bool:
+    """Validate conversation ID format.
+    
+    Args:
+        conversation_id: Conversation ID to validate
+        
+    Returns:
+        True if valid, False otherwise
+    """
+    if not conversation_id or not isinstance(conversation_id, str):
+        return False
+    
+    # Allow alphanumeric, hyphens, and underscores only
+    if not re.match(r'^[a-zA-Z0-9_-]+$', conversation_id):
+        return False
+    
+    # Check length
+    if len(conversation_id) > MAX_CONVERSATION_ID_LENGTH:
+        return False
+    
+    return True
 
 
 def create_rag_agent():
@@ -108,8 +175,18 @@ Always be helpful, accurate, and cite your sources when referencing document con
         return None
 
 
-def save_conversation_message(conversation_id: str, role: str, content: str, timestamp: str):
-    """Save a conversation message to DynamoDB."""
+def save_conversation_message(conversation_id: str, role: str, content: str, timestamp: str) -> bool:
+    """Save a conversation message to DynamoDB.
+    
+    Args:
+        conversation_id: Unique identifier for the conversation
+        role: Role of the message sender (user/assistant)
+        content: Message content
+        timestamp: ISO format timestamp
+        
+    Returns:
+        True if save succeeded, False otherwise
+    """
     try:
         conversation_table.put_item(
             Item={
@@ -119,8 +196,10 @@ def save_conversation_message(conversation_id: str, role: str, content: str, tim
                 'content': content
             }
         )
+        return True
     except Exception as e:
-        logger.error(f"Error saving conversation message: {str(e)}")
+        logger.error(f"Error saving conversation message: {str(e)}", exc_info=True)
+        return False
 
 
 def handler(event: Dict[str, Any], context) -> Dict[str, Any]:
@@ -140,20 +219,36 @@ def handler(event: Dict[str, Any], context) -> Dict[str, Any]:
         user_message = body.get('message', '')
         conversation_id = body.get('conversation_id', 'default')
         
+        # Sanitize inputs (includes stripping)
+        user_message = sanitize_input(user_message)
+        
+        # Validate input
         if not user_message:
-            return {
-                'statusCode': 400,
-                'headers': {
-                    'Content-Type': 'application/json',
-                    'Access-Control-Allow-Origin': '*'
-                },
-                'body': json.dumps({
-                    'error': 'Message is required'
-                })
-            }
+            return create_error_response(
+                400,
+                'invalid_input',
+                'Message is required and cannot be empty'
+            )
+        
+        # Validate message length
+        if len(user_message) > MAX_MESSAGE_LENGTH:
+            return create_error_response(
+                400,
+                'message_too_long',
+                f'Message is too long (max {MAX_MESSAGE_LENGTH} characters)'
+            )
+        
+        # Validate conversation_id format
+        if not validate_conversation_id(conversation_id):
+            return create_error_response(
+                400,
+                'invalid_conversation_id',
+                'Invalid conversation_id format (use alphanumeric, hyphens, and underscores only)'
+            )
+        
+        logger.info(f"Processing message from conversation {conversation_id}")
         
         # Create timestamp
-        from datetime import datetime
         timestamp = datetime.utcnow().isoformat()
         
         # Save user message
@@ -179,26 +274,20 @@ def handler(event: Dict[str, Any], context) -> Dict[str, Any]:
             'status': 'success'
         }
         
-        return {
-            'statusCode': 200,
-            'headers': {
-                'Content-Type': 'application/json',
-                'Access-Control-Allow-Origin': '*'
-            },
-            'body': json.dumps(response_body)
-        }
+        return create_response(200, response_body)
+    
+    except json.JSONDecodeError as e:
+        logger.error(f"Invalid JSON in request body: {str(e)}")
+        return create_error_response(
+            400,
+            'invalid_json',
+            'The request body must be valid JSON'
+        )
         
     except Exception as e:
-        logger.error(f"Error processing RAG query: {str(e)}")
-        
-        return {
-            'statusCode': 500,
-            'headers': {
-                'Content-Type': 'application/json',
-                'Access-Control-Allow-Origin': '*'
-            },
-            'body': json.dumps({
-                'error': 'Internal server error',
-                'message': str(e)
-            })
-        }
+        logger.error(f"Error processing RAG query: {str(e)}", exc_info=True)
+        return create_error_response(
+            500,
+            'internal_error',
+            'An error occurred while processing your request. Please try again later.'
+        )

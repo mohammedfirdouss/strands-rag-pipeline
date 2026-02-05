@@ -122,57 +122,6 @@ Ready to help with your RAG pipeline questions!"""
     return agent
 
 
-def main():
-    """Main function to run the local RAG agent interactively."""
-    print("🤖 Strands RAG Pipeline Agent")
-    print("=" * 50)
-    print("Welcome to your local RAG agent! Type 'quit' to exit.\n")
-    
-    try:
-        agent = create_local_rag_agent()
-        print("✅ Agent initialized successfully!")
-        print("💡 Try asking: 'What is this project about?' or 'Search for information about Strands'\n")
-        
-        while True:
-            try:
-                user_input = input("You: ").strip()
-            except (KeyboardInterrupt, EOFError):
-                print("\n👋 Goodbye!")
-                break
-            
-            if user_input.lower() in ['quit', 'exit', 'bye']:
-                print("👋 Goodbye!")
-                break
-            
-            if not user_input:
-                continue
-            
-            try:
-                print("🤖 Agent: ", end="")
-                response = agent(user_input)
-                print(response)
-                print()
-            except Exception as e:
-                print(f"❌ Error: {str(e)}")
-                print("💡 This might be due to missing API keys. Check your .env file.")
-                print()
-                
-    except Exception as e:
-        print(f"❌ Failed to initialize agent: {str(e)}")
-        print("💡 Make sure you have:")
-        print("   1. Installed requirements: pip install strands-agents strands-agents-tools")
-        print("   2. Set up API keys in .env file")
-        print("   3. For Bedrock: AWS_BEDROCK_API_KEY or AWS credentials")
-        
-        # Provide fallback demo mode
-        print("\n🔧 Running in demo mode without Strands agent...")
-        demo_mode()
-
-
-if __name__ == "__main__":
-    main()
-
-
 def demo_mode():
     """Run a simple demo mode without Strands agent."""
     print("📋 Demo Mode - Simulating RAG Pipeline")
@@ -229,3 +178,54 @@ def demo_mode():
                 print(f"🤖 Demo: No documents found matching '{query}'. Try: 'search strands', 'search rag', or 'search cdk'")
         else:
             print("🤖 Demo: Available commands: 'project', 'search <query>', 'tools', 'quit'")
+
+
+def main():
+    """Main function to run the local RAG agent interactively."""
+    print("🤖 Strands RAG Pipeline Agent")
+    print("=" * 50)
+    print("Welcome to your local RAG agent! Type 'quit' to exit.\n")
+    
+    try:
+        agent = create_local_rag_agent()
+        print("✅ Agent initialized successfully!")
+        print("💡 Try asking: 'What is this project about?' or 'Search for information about Strands'\n")
+        
+        while True:
+            try:
+                user_input = input("You: ").strip()
+            except (KeyboardInterrupt, EOFError):
+                print("\n👋 Goodbye!")
+                break
+            
+            if user_input.lower() in ['quit', 'exit', 'bye']:
+                print("👋 Goodbye!")
+                break
+            
+            if not user_input:
+                continue
+            
+            try:
+                print("🤖 Agent: ", end="")
+                response = agent(user_input)
+                print(response)
+                print()
+            except Exception as e:
+                print(f"❌ Error: {str(e)}")
+                print("💡 This might be due to missing API keys. Check your .env file.")
+                print()
+                
+    except Exception as e:
+        print(f"❌ Failed to initialize agent: {str(e)}")
+        print("💡 Make sure you have:")
+        print("   1. Installed requirements: pip install strands-agents strands-agents-tools")
+        print("   2. Set up API keys in .env file")
+        print("   3. For Bedrock: AWS_BEDROCK_API_KEY or AWS credentials")
+        
+        # Provide fallback demo mode
+        print("\n🔧 Running in demo mode without Strands agent...")
+        demo_mode()
+
+
+if __name__ == "__main__":
+    main()

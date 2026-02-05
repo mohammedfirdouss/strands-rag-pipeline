@@ -10,8 +10,20 @@ import json
 from pathlib import Path
 
 
-def run_command(command: str, description: str, capture_output: bool = True):
-    """Run a shell command and handle errors."""
+from typing import Optional
+
+
+def run_command(command: str, description: str, capture_output: bool = True) -> Optional[subprocess.CompletedProcess]:
+    """Run a shell command and handle errors.
+    
+    Args:
+        command: Shell command to execute
+        description: Human-readable description of the command
+        capture_output: Whether to capture command output
+        
+    Returns:
+        CompletedProcess object if successful, None if failed
+    """
     print(f"🔧 {description}...")
     try:
         result = subprocess.run(
@@ -33,8 +45,12 @@ def run_command(command: str, description: str, capture_output: bool = True):
         return None
 
 
-def validate_prerequisites():
-    """Validate that all prerequisites are met."""
+def validate_prerequisites() -> bool:
+    """Validate that all prerequisites are met.
+    
+    Returns:
+        True if all prerequisites are met, False otherwise
+    """
     print("🔍 Validating prerequisites...")
     
     # Check if CDK is installed
@@ -60,8 +76,12 @@ def validate_prerequisites():
     return True
 
 
-def synthesize_template():
-    """Synthesize the CDK template and validate it."""
+def synthesize_template() -> bool:
+    """Synthesize the CDK template and validate it.
+    
+    Returns:
+        True if synthesis succeeded, False otherwise
+    """
     print("\n📋 Synthesizing CDK template...")
     
     result = run_command("cdk synth", "Synthesizing CloudFormation template")
@@ -83,8 +103,12 @@ def synthesize_template():
         return False
 
 
-def deploy_stack():
-    """Deploy the CDK stack."""
+def deploy_stack() -> bool:
+    """Deploy the CDK stack.
+    
+    Returns:
+        True if deployment succeeded, False otherwise
+    """
     print("\n🚀 Deploying infrastructure...")
     
     # Bootstrap CDK if needed
@@ -117,8 +141,12 @@ def deploy_stack():
     return True
 
 
-def main():
-    """Main deployment function."""
+def main() -> bool:
+    """Main deployment function.
+    
+    Returns:
+        True if deployment completed successfully, False otherwise
+    """
     print("🚀 Strands RAG Pipeline Deployment")
     print("=" * 50)
     
