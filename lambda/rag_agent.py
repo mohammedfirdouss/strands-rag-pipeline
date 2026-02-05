@@ -21,37 +21,27 @@ MAX_MESSAGE_LENGTH = 10000
 MAX_SANITIZE_LENGTH = 50000
 MAX_CONVERSATION_ID_LENGTH = 256
 
-# Validate and get environment variables
-try:
-    env_vars = validate_environment_variables([
-        'DOCUMENT_BUCKET',
-        'CONVERSATION_TABLE',
-        'EMBEDDINGS_TABLE'
-    ])
-    DOCUMENT_BUCKET = env_vars['DOCUMENT_BUCKET']
-    CONVERSATION_TABLE = env_vars['CONVERSATION_TABLE']
-    EMBEDDINGS_TABLE = env_vars['EMBEDDINGS_TABLE']
-    
-    # Initialize AWS clients
-    dynamodb = boto3.resource('dynamodb')
-    s3_client = boto3.client('s3')
-    
-    # Initialize DynamoDB tables
-    conversation_table = dynamodb.Table(CONVERSATION_TABLE)
-    embeddings_table = dynamodb.Table(EMBEDDINGS_TABLE)
-    
-    logger.info(f"Initialized with bucket: {DOCUMENT_BUCKET}, tables: {CONVERSATION_TABLE}, {EMBEDDINGS_TABLE}")
-    
-except ValueError as e:
-    logger.error(f"Environment validation failed: {str(e)}")
-    # Set to None to handle in handler
-    DOCUMENT_BUCKET = None
-    CONVERSATION_TABLE = None
-    EMBEDDINGS_TABLE = None
-    dynamodb = None
-    s3_client = None
-    conversation_table = None
-    embeddings_table = None
+# Validate and get environment variables at module load
+# Fail fast if environment is not configured correctly
+env_vars = validate_environment_variables([
+    'DOCUMENT_BUCKET',
+    'CONVERSATION_TABLE',
+    'EMBEDDINGS_TABLE'
+])
+
+DOCUMENT_BUCKET = env_vars['DOCUMENT_BUCKET']
+CONVERSATION_TABLE = env_vars['CONVERSATION_TABLE']
+EMBEDDINGS_TABLE = env_vars['EMBEDDINGS_TABLE']
+
+# Initialize AWS clients
+dynamodb = boto3.resource('dynamodb')
+s3_client = boto3.client('s3')
+
+# Initialize DynamoDB tables
+conversation_table = dynamodb.Table(CONVERSATION_TABLE)
+embeddings_table = dynamodb.Table(EMBEDDINGS_TABLE)
+
+logger.info(f"Initialized with bucket: {DOCUMENT_BUCKET}, tables: {CONVERSATION_TABLE}, {EMBEDDINGS_TABLE}")
 
 
 def sanitize_input(text: str, max_length: int = MAX_SANITIZE_LENGTH) -> str:
@@ -223,15 +213,6 @@ def handler(event: Dict[str, Any], context) -> Dict[str, Any]:
     Returns:
         API Gateway response
     """
-    # Check environment variables
-    if CONVERSATION_TABLE is None or EMBEDDINGS_TABLE is None:
-        logger.error("Environment variables not properly configured")
-        return create_error_response(
-            500,
-            'configuration_error',
-            'Service configuration error. Please contact support.'
-        )
-    
     try:
         # Parse request body
         body = json.loads(event.get('body', '{}'))

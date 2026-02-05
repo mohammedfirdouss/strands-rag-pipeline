@@ -41,11 +41,14 @@ dependencies = [
 dev = [
     "pytest>=7.4.0",
     "pytest-cov>=4.1.0",
+    "pytest-mock>=3.11.1",
     "black>=23.7.0",
     "flake8>=6.1.0",
     "pylint>=2.17.5",
     "mypy>=1.4.1",
     "pre-commit>=3.3.3",
+    "ipython>=8.14.0",
+    "ipdb>=0.13.13",
 ]
 
 [project.urls]

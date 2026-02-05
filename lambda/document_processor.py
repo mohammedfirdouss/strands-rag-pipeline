@@ -14,30 +14,22 @@ from utils import setup_logging, validate_environment_variables, create_response
 # Configure logging
 logger = setup_logging()
 
-# Validate and get environment variables
-try:
-    env_vars = validate_environment_variables([
-        'DOCUMENT_BUCKET',
-        'EMBEDDINGS_TABLE'
-    ])
-    DOCUMENT_BUCKET = env_vars['DOCUMENT_BUCKET']
-    EMBEDDINGS_TABLE = env_vars['EMBEDDINGS_TABLE']
-    
-    # Initialize AWS clients
-    s3_client = boto3.client('s3')
-    dynamodb = boto3.resource('dynamodb')
-    embeddings_table = dynamodb.Table(EMBEDDINGS_TABLE)
-    
-    logger.info(f"Initialized with bucket: {DOCUMENT_BUCKET}, table: {EMBEDDINGS_TABLE}")
-    
-except ValueError as e:
-    logger.error(f"Environment validation failed: {str(e)}")
-    # Set to None to handle in handler
-    DOCUMENT_BUCKET = None
-    EMBEDDINGS_TABLE = None
-    s3_client = None
-    dynamodb = None
-    embeddings_table = None
+# Validate and get environment variables at module load
+# Fail fast if environment is not configured correctly
+env_vars = validate_environment_variables([
+    'DOCUMENT_BUCKET',
+    'EMBEDDINGS_TABLE'
+])
+
+DOCUMENT_BUCKET = env_vars['DOCUMENT_BUCKET']
+EMBEDDINGS_TABLE = env_vars['EMBEDDINGS_TABLE']
+
+# Initialize AWS clients
+s3_client = boto3.client('s3')
+dynamodb = boto3.resource('dynamodb')
+embeddings_table = dynamodb.Table(EMBEDDINGS_TABLE)
+
+logger.info(f"Initialized with bucket: {DOCUMENT_BUCKET}, table: {EMBEDDINGS_TABLE}")
 
 
 def handler(event: Dict[str, Any], context) -> Dict[str, Any]:
@@ -51,15 +43,6 @@ def handler(event: Dict[str, Any], context) -> Dict[str, Any]:
     Returns:
         API Gateway response
     """
-    # Check environment variables
-    if DOCUMENT_BUCKET is None or EMBEDDINGS_TABLE is None:
-        logger.error("Environment variables not properly configured")
-        return create_error_response(
-            500,
-            'configuration_error',
-            'Service configuration error. Please contact support.'
-        )
-    
     try:
         # Parse request body
         body = json.loads(event.get('body', '{}'))

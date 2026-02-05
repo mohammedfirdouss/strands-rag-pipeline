@@ -1,5 +1,9 @@
 # Development dependencies
-# Install with: pip install -r requirements-dev.txt
+# Install with: pip install -e .[dev]
+# Or if you prefer using requirements files: pip install -r requirements-dev.txt
+
+# Note: These dependencies mirror pyproject.toml [project.optional-dependencies]
+# If you modify this file, also update pyproject.toml to keep them in sync
 
 # Testing
 pytest>=7.4.0

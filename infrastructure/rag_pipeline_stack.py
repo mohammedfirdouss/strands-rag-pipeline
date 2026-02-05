@@ -44,7 +44,12 @@ class RagPipelineStack(Stack):
                     id="DeleteOldVersions",
                     noncurrent_version_expiration=Duration.days(30),
                     enabled=True,
-                )
+                ),
+                s3.LifecycleRule(
+                    id="AbortIncompleteMultipartUpload",
+                    abort_incomplete_multipart_upload_after=Duration.days(7),
+                    enabled=True,
+                ),
             ],
         )
         Tags.of(self.document_bucket).add("Purpose", "DocumentStorage")
