@@ -9,7 +9,7 @@ import os
 from typing import Dict, Any
 
 # Import utilities
-from utils import setup_logging, validate_environment_variables, create_response, create_error_response
+from .utils import setup_logging, validate_environment_variables, create_response, create_error_response
 
 # Configure logging
 logger = setup_logging()
