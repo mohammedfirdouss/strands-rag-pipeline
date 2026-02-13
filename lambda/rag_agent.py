@@ -9,9 +9,10 @@ import os
 import re
 from typing import Dict, Any
 from datetime import datetime
+from boto3.dynamodb.conditions import Key
 
 # Import utilities
-from utils import setup_logging, validate_environment_variables, create_response, create_error_response
+from .utils import setup_logging, validate_environment_variables, create_response, create_error_response
 
 # Configure logging
 logger = setup_logging()
@@ -94,6 +95,26 @@ def validate_conversation_id(conversation_id: str) -> bool:
     return True
 
 
+def fetch_conversation_history(conversation_id: str) -> str:
+    """Retrieve recent conversation history for context."""
+    try:
+        response = conversation_table.query(
+            KeyConditionExpression=Key("conversation_id").eq(conversation_id),
+            ScanIndexForward=True,
+            Limit=10,
+        )
+
+        messages = []
+        for item in response.get('Items', []):
+            messages.append(f"{item['role']}: {item['content']}")
+
+        return "\n".join(messages) if messages else "No previous conversation history."
+
+    except Exception as e:
+        logger.error(f"Error retrieving conversation history: {str(e)}")
+        return "Error retrieving conversation history."
+
+
 def create_rag_agent():
     """Create and configure the Strands RAG agent."""
     try:
@@ -127,23 +148,7 @@ def create_rag_agent():
             Returns:
                 Previous conversation messages
             """
-            try:
-                response = conversation_table.query(
-                    KeyConditionExpression='conversation_id = :cid',
-                    ExpressionAttributeValues={':cid': conversation_id},
-                    ScanIndexForward=True,  # Sort by timestamp ascending
-                    Limit=10  # Last 10 messages
-                )
-                
-                messages = []
-                for item in response.get('Items', []):
-                    messages.append(f"{item['role']}: {item['content']}")
-                
-                return "\n".join(messages) if messages else "No previous conversation history."
-                
-            except Exception as e:
-                logger.error(f"Error retrieving conversation history: {str(e)}")
-                return "Error retrieving conversation history."
+            return fetch_conversation_history(conversation_id)
         
         # Create the agent with custom RAG tools
         agent = Agent(
