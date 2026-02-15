@@ -59,7 +59,7 @@ validate:  ## Validate all Python files
 	@python -m py_compile scripts/deploy.py
 	@python -m py_compile infrastructure/rag_pipeline_stack.py
 	@python -m py_compile app.py
-	@echo "✅ All Python files are valid"
+	@echo "All Python files are valid"
 
 local-agent:  ## Run local RAG agent
 	python agents/rag_agent.py

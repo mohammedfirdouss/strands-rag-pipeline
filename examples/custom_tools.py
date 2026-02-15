@@ -64,7 +64,7 @@ def main():
             system_prompt="""You are a helpful assistant with access to weather information, 
             database queries, and a calculator. Use these tools to help answer user questions."""
         )
-        print("✅ Agent created with custom tools!")
+        print("Agent created with custom tools!")
         
         # Example queries
         queries = [
@@ -84,14 +84,14 @@ def main():
                 response = agent(query)
                 print(f"Response: {response}")
             except Exception as e:
-                print(f"❌ Error: {str(e)}")
+                print(f"Error: {str(e)}")
         
         print(f"\n{'=' * 60}")
-        print("✅ Example completed successfully!")
+        print("Example completed successfully!")
         
     except Exception as e:
-        print(f"❌ Failed to create agent: {str(e)}")
-        print("\n💡 Make sure you have:")
+        print(f"Failed to create agent: {str(e)}")
+        print("\nMake sure you have:")
         print("   1. Installed dependencies: pip install strands-agents strands-agents-tools")
         print("   2. Set up API keys in .env file")
         return 1

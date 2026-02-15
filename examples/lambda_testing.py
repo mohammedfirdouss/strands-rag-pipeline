@@ -42,12 +42,12 @@ def test_document_processor():
         # This is for demonstration purposes
         response = handler(event, MockContext())
         
-        print(f"✅ Response received:")
+        print("Response received:")
         print(f"   Status Code: {response['statusCode']}")
         print(f"   Body: {response['body']}")
         
     except Exception as e:
-        print(f"⚠️  Expected error (missing AWS resources): {str(e)}")
+        print(f"Warning: Expected error (missing AWS resources): {str(e)}")
         print("   This is normal when running locally without AWS setup")
 
 
@@ -85,12 +85,12 @@ def test_rag_agent_handler():
         # Note: This will fail without AWS credentials and DynamoDB tables
         response = handler(event, MockContext())
         
-        print(f"✅ Response received:")
+        print("Response received:")
         print(f"   Status Code: {response['statusCode']}")
         print(f"   Body: {response['body']}")
         
     except Exception as e:
-        print(f"⚠️  Expected error (missing AWS resources): {str(e)}")
+        print(f"Warning: Expected error (missing AWS resources): {str(e)}")
         print("   This is normal when running locally without AWS setup")
 
 
@@ -107,7 +107,7 @@ def main():
     
     print("\n" + "=" * 80)
     print("Testing completed!")
-    print("\n💡 For proper testing, use pytest with mocked AWS services (boto3 moto library)")
+    print("\nFor proper testing, use pytest with mocked AWS services (boto3 moto library)")
     print("=" * 80)
 
 

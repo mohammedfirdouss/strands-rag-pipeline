@@ -83,10 +83,10 @@ python agents/rag_agent.py
 Example interaction:
 ```
 You: What is this project about?
-🤖 Agent: This is the Strands RAG Pipeline project - a multimodal agentic RAG system...
+Agent: This is the Strands RAG Pipeline project - a multimodal agentic RAG system...
 
 You: Search for information about Strands
-🤖 Agent: Found relevant information:
+Agent: Found relevant information:
 [doc1] Strands is an AI agent framework that supports multiple LLM providers...
 ```
 

@@ -25,7 +25,7 @@ def main():
         # Create the agent
         print("\n1. Creating RAG agent...")
         agent = create_local_rag_agent()
-        print("✅ Agent created successfully!")
+        print("Agent created successfully!")
         
         # Example queries
         queries = [
@@ -45,14 +45,14 @@ def main():
                 response = agent(query)
                 print(f"Response: {response}")
             except Exception as e:
-                print(f"❌ Error: {str(e)}")
+                print(f"Error: {str(e)}")
         
         print(f"\n{'=' * 60}")
-        print("✅ Example completed successfully!")
+        print("Example completed successfully!")
         
     except Exception as e:
-        print(f"❌ Failed to create agent: {str(e)}")
-        print("\n💡 Make sure you have:")
+        print(f"Failed to create agent: {str(e)}")
+        print("\nMake sure you have:")
         print("   1. Installed dependencies: pip install -r ../requirements.txt")
         print("   2. Set up API keys in ../.env file")
         return 1

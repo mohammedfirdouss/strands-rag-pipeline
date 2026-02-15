@@ -24,7 +24,7 @@ def run_command(command: str, description: str, capture_output: bool = True) -> 
     Returns:
         CompletedProcess object if successful, None if failed
     """
-    print(f"🔧 {description}...")
+    print(f"{description}...")
     try:
         result = subprocess.run(
             command, 
@@ -35,10 +35,10 @@ def run_command(command: str, description: str, capture_output: bool = True) -> 
         )
         if capture_output and result.stdout:
             print(result.stdout)
-        print(f"✅ {description} completed successfully")
+        print(f"{description} completed successfully")
         return result
     except subprocess.CalledProcessError as e:
-        print(f"❌ {description} failed:")
+        print(f"{description} failed:")
         print(f"   Command: {command}")
         if capture_output and e.stderr:
             print(f"   Error: {e.stderr}")
@@ -51,26 +51,26 @@ def validate_prerequisites() -> bool:
     Returns:
         True if all prerequisites are met, False otherwise
     """
-    print("🔍 Validating prerequisites...")
+    print("Validating prerequisites...")
     
     # Check if CDK is installed
     result = run_command("cdk --version", "Checking CDK installation")
     if not result:
-        print("❌ AWS CDK CLI is not installed. Run: npm install -g aws-cdk")
+        print("Error: AWS CDK CLI is not installed. Run: npm install -g aws-cdk")
         return False
     
     # Check if AWS credentials are configured
     result = run_command("aws sts get-caller-identity", "Checking AWS credentials")
     if not result:
-        print("❌ AWS credentials not configured. Run: aws configure")
+        print("Error: AWS credentials not configured. Run: aws configure")
         return False
     
     # Check if requirements are installed
     try:
         import aws_cdk
-        print("✅ AWS CDK Python library found")
+        print("AWS CDK Python library found")
     except ImportError:
-        print("❌ AWS CDK Python library not found. Run: pip install -r requirements.txt")
+        print("Error: AWS CDK Python library not found. Run: pip install -r requirements.txt")
         return False
     
     return True
@@ -82,7 +82,7 @@ def synthesize_template() -> bool:
     Returns:
         True if synthesis succeeded, False otherwise
     """
-    print("\n📋 Synthesizing CDK template...")
+    print("\nSynthesizing CDK template...")
     
     result = run_command("cdk synth", "Synthesizing CloudFormation template")
     if not result:
@@ -91,15 +91,15 @@ def synthesize_template() -> bool:
     # Check if template was created
     template_path = Path("cdk.out/StrandsRagPipelineStack.template.json")
     if template_path.exists():
-        print(f"✅ Template generated: {template_path}")
+        print(f"Template generated: {template_path}")
         
         # Show template size
         size = template_path.stat().st_size
-        print(f"📊 Template size: {size:,} bytes")
+        print(f"Template size: {size:,} bytes")
         
         return True
     else:
-        print("❌ Template file not found")
+        print("Template file not found")
         return False
 
 
@@ -109,10 +109,10 @@ def deploy_stack() -> bool:
     Returns:
         True if deployment succeeded, False otherwise
     """
-    print("\n🚀 Deploying infrastructure...")
+    print("\nDeploying infrastructure...")
     
     # Bootstrap CDK if needed
-    print("🔧 Bootstrapping CDK (if needed)...")
+    print("Bootstrapping CDK (if needed)...")
     run_command("cdk bootstrap", "CDK Bootstrap", capture_output=False)
     
     # Deploy the stack
@@ -120,7 +120,7 @@ def deploy_stack() -> bool:
     if not result:
         return False
     
-    print("\n✅ Deployment completed successfully!")
+    print("\nDeployment completed successfully!")
     
     # Try to get stack outputs
     try:
@@ -130,13 +130,13 @@ def deploy_stack() -> bool:
             outputs = stack_info['Stacks'][0].get('Outputs', [])
             
             if outputs:
-                print("\n📋 Stack Outputs:")
+                print("\nStack Outputs:")
                 for output in outputs:
                     print(f"   {output['OutputKey']}: {output['OutputValue']}")
                     if 'Description' in output:
                         print(f"      {output['Description']}")
     except Exception as e:
-        print(f"⚠️  Could not retrieve stack outputs: {e}")
+        print(f"Warning: Could not retrieve stack outputs: {e}")
     
     return True
 
@@ -147,39 +147,39 @@ def main() -> bool:
     Returns:
         True if deployment completed successfully, False otherwise
     """
-    print("🚀 Strands RAG Pipeline Deployment")
+    print("Strands RAG Pipeline Deployment")
     print("=" * 50)
     
     # Validate prerequisites
     if not validate_prerequisites():
-        print("\n❌ Prerequisites not met. Please fix the issues above.")
+        print("\nPrerequisites not met. Please fix the issues above.")
         return False
     
     # Synthesize template
     if not synthesize_template():
-        print("\n❌ Template synthesis failed. Please check your CDK code.")
+        print("\nTemplate synthesis failed. Please check your CDK code.")
         return False
     
     # Ask for confirmation
-    print("\n🤔 Ready to deploy the infrastructure?")
+    print("\nReady to deploy the infrastructure?")
     print("   This will create AWS resources that may incur costs.")
     
     response = input("   Continue? (y/N): ").strip().lower()
     if response not in ['y', 'yes']:
-        print("❌ Deployment cancelled.")
+        print("Deployment cancelled.")
         return False
     
     # Deploy
     if not deploy_stack():
-        print("\n❌ Deployment failed. Check the errors above.")
+        print("\nDeployment failed. Check the errors above.")
         return False
     
-    print("\n🎉 Deployment completed successfully!")
-    print("\n📋 Next steps:")
+    print("\nDeployment completed successfully!")
+    print("\nNext steps:")
     print("1. Test the API endpoints")
     print("2. Upload documents to the S3 bucket")
     print("3. Try the chat functionality")
-    print("\n💡 Use 'cdk destroy' to clean up resources when done.")
+    print("\nUse 'cdk destroy' to clean up resources when done.")
     
     return True
 
