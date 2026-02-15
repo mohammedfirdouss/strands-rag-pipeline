@@ -2,7 +2,7 @@
 
 Thank you for your interest in contributing to the Strands RAG Pipeline project! This document provides guidelines and instructions for contributing.
 
-## 🚀 Getting Started
+## Getting Started
 
 ### Prerequisites
 
@@ -33,7 +33,7 @@ Thank you for your interest in contributing to the Strands RAG Pipeline project!
    python test_setup.py
    ```
 
-## 🔧 Development Workflow
+## Development Workflow
 
 ### Making Changes
 
@@ -71,7 +71,7 @@ Thank you for your interest in contributing to the Strands RAG Pipeline project!
    git push origin feature/your-feature-name
    ```
 
-## 📝 Coding Standards
+## Coding Standards
 
 ### Python Style Guide
 
@@ -111,7 +111,7 @@ def process_data(items: List[str], config: Optional[Dict] = None) -> bool:
     pass
 ```
 
-## 🧪 Testing
+## Testing
 
 ### Local Testing
 
@@ -136,7 +136,7 @@ Before submitting a pull request:
 
 When adding new features, consider adding tests to `test_setup.py` or creating new test files.
 
-## 🏗️ Project Structure
+## Project Structure
 
 ```
 strands-rag-pipeline/
@@ -150,7 +150,7 @@ strands-rag-pipeline/
 └── requirements.txt    # Python dependencies
 ```
 
-## 📋 Pull Request Guidelines
+## Pull Request Guidelines
 
 ### Before Submitting
 
@@ -182,7 +182,7 @@ Describe how you tested your changes
 - [ ] Tests pass locally
 ```
 
-## 🐛 Reporting Issues
+## Reporting Issues
 
 ### Bug Reports
 
@@ -204,7 +204,7 @@ When requesting features, include:
 - Possible implementation approach
 - Any relevant examples
 
-## 💡 Areas for Contribution
+## Areas for Contribution
 
 We welcome contributions in these areas:
 
@@ -232,14 +232,14 @@ We welcome contributions in these areas:
 - Cost optimization
 - Monitoring and logging
 
-## 🤝 Code Review Process
+## Code Review Process
 
 1. All PRs require review before merging
 2. Address review comments promptly
 3. Keep discussions focused and professional
 4. Be open to feedback and suggestions
 
-## 📞 Getting Help
+## Getting Help
 
 If you need help or have questions:
 
@@ -248,10 +248,10 @@ If you need help or have questions:
 - Create a new issue with the `question` label
 - Reach out to maintainers
 
-## 📄 License
+## License
 
 By contributing to this project, you agree that your contributions will be licensed under the MIT License.
 
-## 🙏 Thank You
+## Thank You
 
 Your contributions help make this project better for everyone. We appreciate your time and effort!

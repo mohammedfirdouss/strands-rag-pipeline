@@ -12,7 +12,7 @@ try:
     from dotenv import load_dotenv
     load_dotenv()
 except ImportError:
-    print("⚠️  python-dotenv not installed. Environment variables from .env file won't be loaded.")
+    print("Warning: python-dotenv not installed. Environment variables from .env file won't be loaded.")
     pass
 
 def create_local_rag_agent():
@@ -60,10 +60,10 @@ def create_local_rag_agent():
         """
         return """This is the Strands RAG Pipeline project - a multimodal agentic RAG system built with:
 
-🤖 **Strands Agents SDK**: Multi-LLM agent framework with tool support
-☁️ **AWS Infrastructure**: CDK-based cloud infrastructure with S3, DynamoDB, Lambda, and API Gateway
-🔍 **RAG Capabilities**: Document search, embedding storage, and conversation context
-🛠️ **Built-in Tools**: Calculator, Python REPL, HTTP requests, and custom document search
+**Strands Agents SDK**: Multi-LLM agent framework with tool support
+**AWS Infrastructure**: CDK-based cloud infrastructure with S3, DynamoDB, Lambda, and API Gateway
+**RAG Capabilities**: Document search, embedding storage, and conversation context
+**Built-in Tools**: Calculator, Python REPL, HTTP requests, and custom document search
 
 Current status: Development environment ready for testing and expansion."""
     
@@ -76,12 +76,12 @@ Current status: Development environment ready for testing and expansion."""
         """
         return """Available tools in this RAG agent:
 
-🔍 **search_documents**: Search through uploaded documents for relevant information
-📋 **get_project_info**: Get information about this Strands RAG pipeline project  
-🧮 **calculator**: Perform mathematical calculations
-🐍 **python_repl**: Execute Python code for data analysis and processing
-🌐 **http_request**: Make HTTP requests to external APIs
-📚 **list_available_tools**: Show this list of available tools
+**search_documents**: Search through uploaded documents for relevant information
+**get_project_info**: Get information about this Strands RAG pipeline project  
+**calculator**: Perform mathematical calculations
+**python_repl**: Execute Python code for data analysis and processing
+**http_request**: Make HTTP requests to external APIs
+**list_available_tools**: Show this list of available tools
 
 You can ask me to use any of these tools to help with your queries!"""
     
@@ -124,24 +124,24 @@ Ready to help with your RAG pipeline questions!"""
 
 def demo_mode():
     """Run a simple demo mode without Strands agent."""
-    print("📋 Demo Mode - Simulating RAG Pipeline")
+    print("Demo Mode - Simulating RAG Pipeline")
     print("Available commands: 'project', 'search <query>', 'tools', 'quit'")
     
     sample_responses = {
         "project": """This is the Strands RAG Pipeline project - a multimodal agentic RAG system built with:
 
-🤖 **Strands Agents SDK**: Multi-LLM agent framework with tool support
-☁️ **AWS Infrastructure**: CDK-based cloud infrastructure with S3, DynamoDB, Lambda, and API Gateway
-🔍 **RAG Capabilities**: Document search, embedding storage, and conversation context
-🛠️ **Built-in Tools**: Calculator, Python REPL, HTTP requests, and custom document search""",
+**Strands Agents SDK**: Multi-LLM agent framework with tool support
+**AWS Infrastructure**: CDK-based cloud infrastructure with S3, DynamoDB, Lambda, and API Gateway
+**RAG Capabilities**: Document search, embedding storage, and conversation context
+**Built-in Tools**: Calculator, Python REPL, HTTP requests, and custom document search""",
         
         "tools": """Available tools in this RAG agent:
 
-🔍 **search_documents**: Search through uploaded documents for relevant information
-📋 **get_project_info**: Get information about this Strands RAG pipeline project  
-🧮 **calculator**: Perform mathematical calculations
-🐍 **python_repl**: Execute Python code for data analysis and processing
-🌐 **http_request**: Make HTTP requests to external APIs""",
+**search_documents**: Search through uploaded documents for relevant information
+**get_project_info**: Get information about this Strands RAG pipeline project  
+**calculator**: Perform mathematical calculations
+**python_repl**: Execute Python code for data analysis and processing
+**http_request**: Make HTTP requests to external APIs""",
         
         "strands": "Strands is an AI agent framework that supports multiple LLM providers including Bedrock, Anthropic, OpenAI, Gemini, and Meta Llama.",
         
@@ -154,76 +154,76 @@ def demo_mode():
         try:
             user_input = input("\nDemo> ").strip().lower()
         except (KeyboardInterrupt, EOFError):
-            print("\n👋 Goodbye!")
+            print("\nGoodbye!")
             break
             
         if user_input in ['quit', 'exit', 'bye']:
-            print("👋 Goodbye!")
+            print("Goodbye!")
             break
             
         if user_input == 'project':
-            print("🤖 Demo:", sample_responses["project"])
+            print("Demo:", sample_responses["project"])
         elif user_input == 'tools':
-            print("🤖 Demo:", sample_responses["tools"])
+            print("Demo:", sample_responses["tools"])
         elif user_input.startswith('search '):
             query = user_input[7:]
             found = False
             for key, response in sample_responses.items():
                 if key in query:
-                    print(f"🤖 Demo: Found information about '{key}':")
+                    print(f"Demo: Found information about '{key}':")
                     print(response)
                     found = True
                     break
             if not found:
-                print(f"🤖 Demo: No documents found matching '{query}'. Try: 'search strands', 'search rag', or 'search cdk'")
+                print(f"Demo: No documents found matching '{query}'. Try: 'search strands', 'search rag', or 'search cdk'")
         else:
-            print("🤖 Demo: Available commands: 'project', 'search <query>', 'tools', 'quit'")
+            print("Demo: Available commands: 'project', 'search <query>', 'tools', 'quit'")
 
 
 def main():
     """Main function to run the local RAG agent interactively."""
-    print("🤖 Strands RAG Pipeline Agent")
+    print("Strands RAG Pipeline Agent")
     print("=" * 50)
     print("Welcome to your local RAG agent! Type 'quit' to exit.\n")
     
     try:
         agent = create_local_rag_agent()
-        print("✅ Agent initialized successfully!")
-        print("💡 Try asking: 'What is this project about?' or 'Search for information about Strands'\n")
+        print("Agent initialized successfully!")
+        print("Try asking: 'What is this project about?' or 'Search for information about Strands'\n")
         
         while True:
             try:
                 user_input = input("You: ").strip()
             except (KeyboardInterrupt, EOFError):
-                print("\n👋 Goodbye!")
+                print("\nGoodbye!")
                 break
             
             if user_input.lower() in ['quit', 'exit', 'bye']:
-                print("👋 Goodbye!")
+                print("Goodbye!")
                 break
             
             if not user_input:
                 continue
             
             try:
-                print("🤖 Agent: ", end="")
+                print("Agent: ", end="")
                 response = agent(user_input)
                 print(response)
                 print()
             except Exception as e:
-                print(f"❌ Error: {str(e)}")
-                print("💡 This might be due to missing API keys. Check your .env file.")
+                print(f"Error: {str(e)}")
+                print("This might be due to missing API keys. Check your .env file.")
                 print()
                 
     except Exception as e:
-        print(f"❌ Failed to initialize agent: {str(e)}")
-        print("💡 Make sure you have:")
+        print(f"Failed to initialize agent: {str(e)}")
+        print("Make sure you have:")
         print("   1. Installed requirements: pip install strands-agents strands-agents-tools")
         print("   2. Set up API keys in .env file")
         print("   3. For Bedrock: AWS_BEDROCK_API_KEY or AWS credentials")
         
         # Provide fallback demo mode
-        print("\n🔧 Running in demo mode without Strands agent...")
+        print("\nRunning in demo mode without Strands agent...")
         demo_mode()
 
 

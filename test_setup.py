@@ -14,29 +14,29 @@ def test_imports() -> bool:
     Returns:
         True if all imports succeeded, False otherwise
     """
-    print("🧪 Testing package imports...")
+    print("Testing package imports...")
     
     try:
         import aws_cdk
-        print("✅ AWS CDK imported successfully")
+        print("AWS CDK imported successfully")
     except ImportError as e:
-        print(f"❌ AWS CDK import failed: {e}")
+        print(f"Error: AWS CDK import failed: {e}")
         return False
     
     try:
         from strands import Agent, tool
-        print("✅ Strands SDK imported successfully")
+        print("Strands SDK imported successfully")
     except ImportError as e:
-        print(f"❌ Strands SDK import failed: {e}")
-        print("💡 Run: pip install strands-agents")
+        print(f"Error: Strands SDK import failed: {e}")
+        print("Run: pip install strands-agents")
         return False
     
     try:
         from strands_tools import calculator, python_repl, http_request
-        print("✅ Strands tools imported successfully")
+        print("Strands tools imported successfully")
     except ImportError as e:
-        print(f"❌ Strands tools import failed: {e}")
-        print("💡 Run: pip install strands-agents-tools")
+        print(f"Error: Strands tools import failed: {e}")
+        print("Run: pip install strands-agents-tools")
         return False
     
     return True
@@ -48,7 +48,7 @@ def test_file_structure() -> bool:
     Returns:
         True if all files exist, False otherwise
     """
-    print("\n📁 Testing file structure...")
+    print("\nTesting file structure...")
     
     required_files = [
         "app.py",
@@ -67,10 +67,10 @@ def test_file_structure() -> bool:
         if not Path(file_path).exists():
             missing_files.append(file_path)
         else:
-            print(f"✅ {file_path}")
+            print(f"Found {file_path}")
     
     if missing_files:
-        print(f"❌ Missing files: {missing_files}")
+        print(f"Missing files: {missing_files}")
         return False
     
     return True
@@ -82,7 +82,7 @@ def test_cdk_synth() -> bool:
     Returns:
         True if CDK synthesis succeeded, False otherwise
     """
-    print("\n🔧 Testing CDK synthesis...")
+    print("\nTesting CDK synthesis...")
     
     try:
         import subprocess
@@ -94,17 +94,17 @@ def test_cdk_synth() -> bool:
         )
         
         if result.returncode == 0:
-            print("✅ CDK app runs without errors")
+            print("CDK app runs without errors")
             return True
         else:
-            print(f"❌ CDK app failed: {result.stderr}")
+            print(f"CDK app failed: {result.stderr}")
             return False
             
     except subprocess.TimeoutExpired:
-        print("❌ CDK synthesis timed out")
+        print("CDK synthesis timed out")
         return False
     except Exception as e:
-        print(f"❌ CDK test failed: {e}")
+        print(f"CDK test failed: {e}")
         return False
 
 
@@ -114,7 +114,7 @@ def test_local_agent() -> bool:
     Returns:
         True if agent creation succeeded, False otherwise
     """
-    print("\n🤖 Testing local RAG agent...")
+    print("\nTesting local RAG agent...")
     
     try:
         # Import the local agent
@@ -123,32 +123,32 @@ def test_local_agent() -> bool:
         
         # Try to create the agent
         agent = create_local_rag_agent()
-        print("✅ Local RAG agent created successfully")
+        print("Local RAG agent created successfully")
         
         # Test a simple query (with timeout for Windows compatibility)
         try:
             response = agent("What tools are available?")
             if "tools" in response.lower():
-                print("✅ Agent responds correctly to queries")
+                print("Agent responds correctly to queries")
                 return True
             else:
-                print("⚠️  Agent created but response seems unusual")
+                print("Warning: Agent created but response seems unusual")
                 return True
         except Exception as e:
-            print(f"⚠️  Agent created but query failed: {str(e)}")
+            print(f"Warning: Agent created but query failed: {str(e)}")
             print("   This might be due to missing API keys - that's OK for setup testing")
             return True
             
     except ImportError as e:
         if "fcntl" in str(e):
-            print("⚠️  Windows compatibility issue detected (fcntl module)")
+            print("Warning: Windows compatibility issue detected (fcntl module)")
             print("   This is expected on Windows - agent will run in demo mode")
             return True
         else:
-            print(f"❌ Import error: {e}")
+            print(f"Import error: {e}")
             return False
     except Exception as e:
-        print(f"❌ Local agent test failed: {e}")
+        print(f"Local agent test failed: {e}")
         return False
 
 
@@ -158,7 +158,7 @@ def main() -> bool:
     Returns:
         True if all tests passed, False otherwise
     """
-    print("🧪 Strands RAG Pipeline Setup Test")
+    print("Strands RAG Pipeline Setup Test")
     print("=" * 50)
     
     tests = [
@@ -172,27 +172,27 @@ def main() -> bool:
     total = len(tests)
     
     for test_name, test_func in tests:
-        print(f"\n🔍 Running {test_name} test...")
+        print(f"\nRunning {test_name} test...")
         try:
             if test_func():
                 passed += 1
-                print(f"✅ {test_name} test passed")
+                print(f"{test_name} test passed")
             else:
-                print(f"❌ {test_name} test failed")
+                print(f"{test_name} test failed")
         except Exception as e:
-            print(f"❌ {test_name} test error: {e}")
+            print(f"{test_name} test error: {e}")
     
-    print(f"\n📊 Test Results: {passed}/{total} tests passed")
+    print(f"\nTest Results: {passed}/{total} tests passed")
     
     if passed == total:
-        print("🎉 All tests passed! Your setup is ready.")
-        print("\n📋 Next steps:")
+        print("All tests passed! Your setup is ready.")
+        print("\nNext steps:")
         print("1. Add API keys to .env file")
         print("2. Test locally: python agents/rag_agent.py")
         print("3. Deploy: python scripts/deploy.py")
     else:
-        print("⚠️  Some tests failed. Please fix the issues above.")
-        print("💡 Try running: python scripts/setup.py")
+        print("Some tests failed. Please fix the issues above.")
+        print("Try running: python scripts/setup.py")
     
     return passed == total
 
