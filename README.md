@@ -6,13 +6,13 @@ A multimodal agentic RAG (Retrieval-Augmented Generation) pipeline built with AW
 
 This project combines the power of **Strands Agents SDK** with **AWS cloud infrastructure** to create an intelligent RAG system that can:
 
-- 🤖 **Intelligent Agents**: Multi-LLM support (Bedrock, Anthropic, OpenAI, Gemini, Meta Llama)
-- 📚 **Document Processing**: Upload and process documents for semantic search
-- 💬 **Conversational AI**: Maintain context across conversations
-- ☁️ **Scalable Infrastructure**: AWS-native with S3, DynamoDB, Lambda, and API Gateway
-- 🛠️ **Built-in Tools**: Calculator, Python REPL, HTTP requests, and custom tools
+- **Intelligent Agents**: Multi-LLM support (Bedrock, Anthropic, OpenAI, Gemini, Meta Llama)
+- **Document Processing**: Upload and process documents for semantic search
+- **Conversational AI**: Maintain context across conversations
+- **Scalable Infrastructure**: AWS-native with S3, DynamoDB, Lambda, and API Gateway
+- **Built-in Tools**: Calculator, Python REPL, HTTP requests, and custom tools
 
-## 🏗️ Architecture
+## Architecture
 
 ```
 ┌─────────────────┐    ┌──────────────────┐    ┌─────────────────┐
@@ -32,7 +32,7 @@ This project combines the power of **Strands Agents SDK** with **AWS cloud infra
         └──────────────┘ └─────────────┘ └────────────┘
 ```
 
-## 🛠️ Quick Start
+## Quick Start
 
 ### 1. Setup Environment
 
@@ -72,7 +72,7 @@ python agents/rag_agent.py
 python scripts/deploy.py
 ```
 
-## 🧪 Local Development
+## Local Development
 
 ### Test the RAG Agent
 
@@ -93,13 +93,13 @@ You: Search for information about Strands
 ### Available Tools
 
 The agent comes with these built-in tools:
-- 🔍 **Document Search**: Search through uploaded documents
-- 📋 **Project Info**: Get project details and capabilities  
-- 🧮 **Calculator**: Perform mathematical calculations
-- 🐍 **Python REPL**: Execute Python code for analysis
-- 🌐 **HTTP Requests**: Make external API calls
+- **Document Search**: Search through uploaded documents
+- **Project Info**: Get project details and capabilities  
+- **Calculator**: Perform mathematical calculations
+- **Python REPL**: Execute Python code for analysis
+- **HTTP Requests**: Make external API calls
 
-## ☁️ AWS Infrastructure
+## AWS Infrastructure
 
 ### Components
 
@@ -132,7 +132,7 @@ cdk deploy
 cdk destroy
 ```
 
-## 🔧 Configuration
+## Configuration
 
 ### Model Providers
 
@@ -188,28 +188,7 @@ def custom_search(query: str) -> str:
 agent = Agent(tools=[custom_search, ...])
 ```
 
-## 📚 Project Structure
-
-```
-strands-rag-pipeline/
-├── agents/                 # Local development agents
-│   └── rag_agent.py       # Main RAG agent for testing
-├── infrastructure/         # CDK infrastructure code
-│   └── rag_pipeline_stack.py
-├── lambda/                # AWS Lambda functions
-│   ├── document_processor.py
-│   ├── rag_agent.py
-│   └── requirements.txt
-├── scripts/               # Utility scripts
-│   ├── setup.py          # Environment setup
-│   └── deploy.py         # Deployment script
-├── app.py                # CDK app entry point
-├── cdk.json              # CDK configuration
-├── requirements.txt      # Python dependencies
-└── .env.example         # Environment variables template
-```
-
-## 🔍 Using the Powers
+## Using the Powers
 
 This project leverages two Kiro Powers:
 
@@ -225,7 +204,7 @@ This project leverages two Kiro Powers:
 - Conversation context management
 - Documentation and examples
 
-## 🚨 Troubleshooting
+## Troubleshooting
 
 ### Common Issues
 
@@ -256,20 +235,12 @@ cdk bootstrap
 aws sts get-caller-identity
 ```
 
-## 📖 Documentation
+## Documentation
 
 - [Strands Agents SDK](https://docs.strands.ai/)
 - [AWS CDK Guide](https://docs.aws.amazon.com/cdk/)
 - [Amazon Bedrock](https://docs.aws.amazon.com/bedrock/)
 
-## 🤝 Contributing
-
-1. Fork the repository
-2. Create a feature branch
-3. Make your changes
-4. Test locally with `python agents/rag_agent.py`
-5. Submit a pull request
-
-## 📄 License
+## License
 
 This project is licensed under the MIT License - see the LICENSE file for details.
